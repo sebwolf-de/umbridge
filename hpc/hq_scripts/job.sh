@@ -1,10 +1,10 @@
 #! /bin/bash
 
-#HQ --cpus=1
-#HQ --time-request=1m
-#HQ --time-limit=2m
-#HQ --stdout none
-#HQ --stderr none
+#HQ --resource model=1
+#HQ --time-limit=10m
+###HQ --stdout ./stdout
+###HQ --stderr ./stderr
+#HQ --nodes 2
 
 # Launch model server, send back server URL
 # and wait to ensure that HQ won't schedule any more jobs to this allocation.
@@ -28,11 +28,18 @@ function get_avaliable_port {
 
 port=$(get_avaliable_port)
 export PORT=$port
+export RANKS=$(wc -l $HQ_NODE_FILE | awk '{print $1}')
 
 # Assume that server sets the port according to the environment variable 'PORT'.
-/your/model/server/call & # CHANGE ME!
+module load tacc-apptainer 
+cd $WORK/UQ/Seis-Bridge/tpv5
+module load intel
+module load python3/3.7.0
+which python3
+ls -la
+python3 ../server/server.py &
 
-load_balancer_dir="/load/balancer/directory" # CHANGE ME!
+load_balancer_dir="${HOME}/UQ/umbridge/hpc"
 
 
 host=$(hostname -I | awk '{print $1}')
