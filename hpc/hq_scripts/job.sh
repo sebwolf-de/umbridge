@@ -1,10 +1,10 @@
 #! /bin/bash
-
-#HQ --resource model=1
-#HQ --time-limit=10m
-###HQ --stdout ./stdout
-###HQ --stderr ./stderr
+##HQ --resource model=1
+##HQ --time-limit=10m
+##HQ --stdout ./stdout
+##HQ --stderr ./stderr
 #HQ --nodes 2
+TZ='Europe/Berlin' date
 
 # Launch model server, send back server URL
 # and wait to ensure that HQ won't schedule any more jobs to this allocation.
@@ -31,11 +31,11 @@ export PORT=$port
 export RANKS=$(wc -l $HQ_NODE_FILE | awk '{print $1}')
 
 # Assume that server sets the port according to the environment variable 'PORT'.
+mpiexec.hydra -np $RANKS -machinefile $HQ_NODE_FILE hostname 
 module load tacc-apptainer 
-cd $WORK/UQ/Seis-Bridge/tpv5
 module load intel
 module load python3/3.7.0
-which python3
+cd $WORK/UQ/Seis-Bridge/tpv5
 ls -la
 python3 ../server/server.py &
 
