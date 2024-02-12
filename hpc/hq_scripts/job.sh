@@ -1,9 +1,6 @@
 #! /bin/bash
-##HQ --resource model=1
-##HQ --time-limit=10m
-##HQ --stdout ./stdout
-##HQ --stderr ./stderr
-#HQ --nodes 2
+### TODO Set the same number as $M in allocation_queue.sh here.
+#HQ --nodes 144
 TZ='Europe/Berlin' date
 
 # Launch model server, send back server URL
@@ -34,13 +31,14 @@ export RANKS=$(wc -l $HQ_NODE_FILE | awk '{print $1}')
 mpiexec.hydra -np $RANKS -machinefile $HQ_NODE_FILE hostname 
 module load tacc-apptainer 
 module load intel
-module load python3/3.7.0
+module load python3/3.9.2
+### TODO adpat the path here
 cd $WORK/UQ/Seis-Bridge/tpv5
 ls -la
 python3 ../server/server.py &
 
+### TODO adpat the path here
 load_balancer_dir="${HOME}/UQ/umbridge/hpc"
-
 
 host=$(hostname -I | awk '{print $1}')
 
