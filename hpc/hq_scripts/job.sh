@@ -28,11 +28,19 @@ export PORT=$port
 export RANKS=$(wc -l $HQ_NODE_FILE | awk '{print $1}')
 
 # Assume that server sets the port according to the environment variable 'PORT'.
-mpiexec.hydra -np $RANKS -machinefile $HQ_NODE_FILE hostname 
+export TACC_IBRUN_DEBUG=1
+unset OMPI_MCA_plm_slurm_args
+unset PRTE_MCA_plm_slurm_args
+unset HYDRA_LAUNCHER_EXTRA_ARGS
+unset I_MPI_HYDRA_BOOTSTRAP_EXEC_EXTRA_ARGS
+export I_MPI_HYDRA_BOOTSTRAP=ssh
+export NODE_TASKS_PPN_INFO=1,0_
+mpiexec.hydra -np $RANKS -machinefile $HQ_NODE_FILE /usr/bin/hostname
+
 module load tacc-apptainer 
 module load intel
 module load python3/3.9.2
-### TODO adpat the path here
+### TODO adapt the path here
 cd $WORK/UQ/Seis-Bridge/tpv5
 ls -la
 python3 ../server/server.py &
