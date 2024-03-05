@@ -1,6 +1,6 @@
 #! /bin/bash
 ### TODO Set the same number as $M in allocation_queue.sh here.
-#HQ --nodes 144
+#HQ --nodes 4
 TZ='Europe/Berlin' date
 
 # Launch model server, send back server URL
@@ -27,8 +27,6 @@ port=$(get_avaliable_port)
 export PORT=$port
 export RANKS=$(wc -l $HQ_NODE_FILE | awk '{print $1}')
 
-# Assume that server sets the port according to the environment variable 'PORT'.
-export TACC_IBRUN_DEBUG=1
 unset OMPI_MCA_plm_slurm_args
 unset PRTE_MCA_plm_slurm_args
 unset HYDRA_LAUNCHER_EXTRA_ARGS
@@ -41,9 +39,9 @@ module load tacc-apptainer
 module load intel
 module load python3/3.9.2
 ### TODO adapt the path here
-cd $WORK/UQ/Seis-Bridge/tpv5
+cd $WORK/UQ/Seis-Bridge/tpv13
 ls -la
-python3 ../server/server.py &
+python3 tpv13server.py &
 
 ### TODO adpat the path here
 load_balancer_dir="${HOME}/UQ/umbridge/hpc"
