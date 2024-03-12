@@ -1,6 +1,6 @@
 #! /bin/bash
 ### TODO Set the same number as $M in allocation_queue.sh here.
-#HQ --nodes 4
+#HQ --nodes 3
 TZ='Europe/Berlin' date
 
 # Launch model server, send back server URL
@@ -40,10 +40,12 @@ module load intel
 module load python3/3.9.2
 ### TODO adapt the path here
 cd $WORK/UQ/Seis-Bridge/tpv13
-ls -la
 python3 tpv13server.py &
 
-### TODO adpat the path here
+#cd /home1/09160/sebwolf/UQ/mtmc/models
+#python3 loglikelihood_gauss.py &
+
+### TODO adapt the path here
 load_balancer_dir="${HOME}/UQ/umbridge/hpc"
 
 host=$(hostname -I | awk '{print $1}')
