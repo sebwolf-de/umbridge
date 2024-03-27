@@ -35,7 +35,6 @@ export I_MPI_HYDRA_BOOTSTRAP=ssh
 export NODE_TASKS_PPN_INFO=1,0_
 mpiexec.hydra -np $RANKS -machinefile $HQ_NODE_FILE /usr/bin/hostname
 
-module load tacc-apptainer 
 module load intel
 module load python3/3.9.2
 ### TODO adapt the path here
@@ -43,10 +42,10 @@ cd $WORK/UQ/Seis-Bridge/tpv13
 python3 tpv13server.py &
 
 #cd /home1/09160/sebwolf/UQ/mtmc/models
-#python3 loglikelihood_gauss.py &
+#python3 loglikelihood_gauss.py -c &
 
 ### TODO adapt the path here
-load_balancer_dir="${HOME}/UQ/umbridge/hpc"
+load_balancer_dir="${HOME}/UQ/umbridge/hpc/build"
 
 host=$(hostname -I | awk '{print $1}')
 
@@ -54,6 +53,8 @@ host=$(hostname -I | awk '{print $1}')
 while ! curl -s "http://$host:$port/Info" > /dev/null; do
     sleep 1
 done
+
+echo "Started server successfully, running on ${host}:${port}"
 
 # Write server URL to file identified by HQ job ID.
 mkdir -p "$load_balancer_dir/urls"

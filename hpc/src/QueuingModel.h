@@ -14,27 +14,28 @@
 
 #include "JobQueue.h"
 #include "Request.h"
-#include "WorkerList.h"
 #include "Worker.h"
+#include "WorkerList.h"
 
 namespace umbridge {
-class QueuingModel : public umbridge::Model { private:
+class QueuingModel : public umbridge::Model {
+private:
   static std::mutex m;
   static std::condition_variable cv;
   const size_t numberOfInputs;
   const size_t numberOfOutputs;
-  WorkerList& wl;
+  WorkerList &wl;
   JobQueue q;
 
-  static void wait(const Request::JobState& lock) {
+  static void wait(const Request::JobState &lock) {
     std::unique_lock<std::mutex> lk(m);
     std::cerr << "Waiting for evaluation ..." << std::endl;
     cv.wait(lk, [&lock] { return lock == Request::JobState::Finished; });
     std::cerr << "...finished waiting." << std::endl;
   }
-  
-  public:
-  static void processQueue(QueuingModel* qm) {
+
+public:
+  static void processQueue(QueuingModel *qm) {
     while (true) {
       if (!qm->q.empty()) {
         std::shared_ptr<Worker> availableWorker = qm->wl.getFreeWorker();
@@ -48,30 +49,26 @@ class QueuingModel : public umbridge::Model { private:
       }
       std::this_thread::sleep_for(std::chrono::milliseconds(1000));
     }
-
   }
 
-  QueuingModel(std::string name,
-        size_t numberOfInputs,
-        size_t numberOfOutputs,
-        WorkerList& wl)
+  QueuingModel(std::string name, size_t numberOfInputs, size_t numberOfOutputs,
+               WorkerList &wl)
       : umbridge::Model(std::move(name)), numberOfInputs(numberOfInputs),
-        numberOfOutputs(numberOfOutputs), wl(wl)  {
-  }
+        numberOfOutputs(numberOfOutputs), wl(wl) {}
 
   [[nodiscard]] std::vector<std::size_t>
-      GetInputSizes(const json& config = json::parse("{}")) const override {
+  GetInputSizes(const json &config = json::parse("{}")) const override {
     return {numberOfInputs};
   }
 
   [[nodiscard]] std::vector<std::size_t>
-      GetOutputSizes(const json& config = json::parse("{}")) const override {
+  GetOutputSizes(const json &config = json::parse("{}")) const override {
     return {numberOfOutputs};
   }
 
   [[nodiscard]] std::vector<std::vector<double>>
-      Evaluate(const std::vector<std::vector<double>>& inputs,
-               json config = json::parse("{}")) override {
+  Evaluate(const std::vector<std::vector<double>> &inputs,
+           json config = json::parse("{}")) override {
     std::shared_ptr<Request> r = std::make_shared<Request>(inputs, config);
     q.push(r);
     std::thread t(wait, std::ref(r->state));
@@ -79,7 +76,6 @@ class QueuingModel : public umbridge::Model { private:
 
     return r->output;
   }
-  
 
   [[nodiscard]] bool SupportsEvaluate() override { return true; }
 
@@ -88,6 +84,6 @@ class QueuingModel : public umbridge::Model { private:
   [[nodiscard]] bool SupportsApplyJacobian() override { return false; }
 
   [[nodiscard]] bool SupportsApplyHessian() override { return false; }
-}; 
-}
+};
+} // namespace umbridge
 #endif

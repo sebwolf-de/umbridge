@@ -11,18 +11,18 @@
 
 namespace umbridge {
 class JobQueue {
-  public:
-  private:
+private:
   static std::mutex m;
   std::vector<std::shared_ptr<Request>> requests;
 
-  public:
+public:
   JobQueue(){};
 
   void push(std::shared_ptr<Request> r) {
     const std::unique_lock<std::mutex> lk(m);
     requests.push_back(r);
-    std::cout << "Pushed request, now " << countWaiting() << " models are waiting." << std::endl;
+    std::cout << "Pushed request, now " << countWaiting()
+              << " models are waiting." << std::endl;
   }
 
   std::shared_ptr<Request> firstWaiting() {
@@ -30,7 +30,7 @@ class JobQueue {
     for (unsigned i = 0; i < requests.size(); i++) {
       std::shared_ptr<Request> r = requests.at(i);
       if (r == nullptr) {
-        continue; 
+        continue;
       }
       if (r->state == Request::JobState::Waiting) {
         return r;
@@ -39,25 +39,22 @@ class JobQueue {
     return nullptr;
   }
 
-  bool empty() {
-    return firstWaiting() == nullptr;
-  }
- 
+  bool empty() { return firstWaiting() == nullptr; }
+
   unsigned countWaiting() {
     unsigned counter = 0;
     for (unsigned i = 0; i < requests.size(); i++) {
       std::shared_ptr<Request> r = requests.at(i);
       if (r == nullptr) {
-        continue; 
+        continue;
       }
       if (r->state == Request::JobState::Waiting) {
-        counter ++;
+        counter++;
       }
     }
     return counter;
   }
-
 };
 
-}
+} // namespace umbridge
 #endif

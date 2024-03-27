@@ -10,8 +10,8 @@
 #include "Worker.h"
 
 namespace umbridge {
-  class WorkerList {
-  public:
+class WorkerList {
+public:
   static std::mutex m;
   std::vector<std::shared_ptr<Worker>> workers;
 
@@ -31,5 +31,5 @@ namespace umbridge {
   }
 };
 
-}
+} // namespace umbridge
 #endif
