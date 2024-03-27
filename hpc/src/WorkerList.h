@@ -11,18 +11,18 @@
 
 namespace umbridge {
 class WorkerList {
-public:
+  public:
   static std::mutex m;
   std::vector<std::shared_ptr<Worker>> workers;
 
-  void add(std::shared_ptr<Worker> w) {
-    std::unique_lock<std::mutex>(m);
+  void add(const std::shared_ptr<Worker>& w) {
+    const std::unique_lock<std::mutex>(m);
     workers.push_back(w);
   }
 
   std::shared_ptr<Worker> getFreeWorker() {
     std::shared_ptr<Worker> freeWorker = nullptr;
-    for (auto w : workers) {
+    for (const auto& w : workers) {
       if (!w->occupied) {
         freeWorker = w;
       }

@@ -10,16 +10,15 @@
 
 namespace umbridge {
 class LoadBalancer {
-private:
-  void startServer();
-  void stopServer();
+  private:
+  static void startServer();
+  static void stopServer();
 
-public:
+  public:
   WorkerList wl;
   LoadBalancer();
   ~LoadBalancer();
-  void submitHQJob(const std::string &model_name,
-                   bool force_default_submission_script = false);
+  void submitHQJob(const std::string& modelName, bool forceDefaultSubmissionScript = false);
 };
 }; // namespace umbridge
 
