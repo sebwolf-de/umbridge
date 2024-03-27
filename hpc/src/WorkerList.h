@@ -15,21 +15,9 @@ class WorkerList {
   static std::mutex m;
   std::vector<std::shared_ptr<Worker>> workers;
 
-  void add(const std::shared_ptr<Worker>& w) {
-    const std::unique_lock<std::mutex>(m);
-    workers.push_back(w);
-  }
+  void add(const std::shared_ptr<Worker>& w);
 
-  std::shared_ptr<Worker> getFreeWorker() {
-    std::shared_ptr<Worker> freeWorker = nullptr;
-    for (const auto& w : workers) {
-      if (!w->occupied) {
-        freeWorker = w;
-      }
-    }
-    return freeWorker;
-  }
+  std::shared_ptr<Worker> getFreeWorker();
 };
-
 } // namespace umbridge
 #endif

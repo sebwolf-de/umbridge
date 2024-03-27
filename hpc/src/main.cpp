@@ -1,6 +1,6 @@
 #include <iostream>
 
-#include "LoadBalancer.hpp"
+#include "LoadBalancer.h"
 
 #include "QueuingModel.h"
 

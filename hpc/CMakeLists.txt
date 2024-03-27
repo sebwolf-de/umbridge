@@ -8,8 +8,11 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 add_executable(load-balancer
 src/main.cpp
+src/JobQueue.cpp
 src/LoadBalancer.cpp
+src/QueuingModel.cpp
 src/Worker.cpp
+src/WorkerList.cpp
 )
 
 target_include_directories(load-balancer PUBLIC ../lib)

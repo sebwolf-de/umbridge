@@ -18,39 +18,10 @@ class JobQueue {
   public:
   JobQueue() = default;
 
-  void push(const std::shared_ptr<Request>& r) {
-    const std::unique_lock<std::mutex> lk(m);
-    requests.push_back(r);
-    std::cout << "Pushed request, now " << countWaiting() << " models are waiting." << std::endl;
-  }
-
-  std::shared_ptr<Request> firstWaiting() {
-    const std::unique_lock<std::mutex> lk(m);
-    for (auto r : requests) {
-      if (r == nullptr) {
-        continue;
-      }
-      if (r->state == Request::JobState::Waiting) {
-        return r;
-      }
-    }
-    return nullptr;
-  }
-
-  bool empty() { return firstWaiting() == nullptr; }
-
-  unsigned countWaiting() {
-    unsigned counter = 0;
-    for (const auto& r : requests) {
-      if (r == nullptr) {
-        continue;
-      }
-      if (r->state == Request::JobState::Waiting) {
-        counter++;
-      }
-    }
-    return counter;
-  }
+  void push(const std::shared_ptr<Request>& r);
+  std::shared_ptr<Request> firstWaiting() const;
+  bool empty() const;
+  unsigned countWaiting() const;
 };
 
 } // namespace umbridge
