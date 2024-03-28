@@ -4,7 +4,7 @@
 
 void umbridge::Worker::processRequest(umbridge::Request* r) {
   occupied = true;
-  r->state = Request::JobState::Processing;
+  r->state = Request::RequestState::Processing;
   std::cout << "Process request on " << url << ". This might take a while." << std::endl;
   umbridge::HTTPModel client(url, "forward");
 
@@ -13,7 +13,7 @@ void umbridge::Worker::processRequest(umbridge::Request* r) {
   for (const auto& output : outputs) {
     r->output.push_back(output);
   }
-  r->state = Request::JobState::Finished;
+  r->state = Request::RequestState::Finished;
   if (cv != nullptr) {
     cv->notify_all();
   }

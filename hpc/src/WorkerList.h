@@ -12,7 +12,7 @@
 namespace umbridge {
 class WorkerList {
   public:
-  static std::mutex m;
+  static std::mutex workersMutex;
   std::vector<std::shared_ptr<Worker>> workers;
 
   void add(const std::shared_ptr<Worker>& w);

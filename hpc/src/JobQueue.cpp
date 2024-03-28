@@ -1,18 +1,16 @@
 #include "JobQueue.h"
 
 void umbridge::JobQueue::push(const std::shared_ptr<Request>& r) {
-  const std::unique_lock<std::mutex> lk(m);
   requests.push_back(r);
   std::cout << "Pushed request, now " << countWaiting() << " models are waiting." << std::endl;
 }
 
 std::shared_ptr<umbridge::Request> umbridge::JobQueue::firstWaiting() const {
-  const std::unique_lock<std::mutex> lk(m);
   for (auto r : requests) {
     if (r == nullptr) {
       continue;
     }
-    if (r->state == Request::JobState::Waiting) {
+    if (r->state == Request::RequestState::Waiting) {
       return r;
     }
   }
@@ -27,7 +25,7 @@ unsigned umbridge::JobQueue::countWaiting() const {
     if (r == nullptr) {
       continue;
     }
-    if (r->state == Request::JobState::Waiting) {
+    if (r->state == Request::RequestState::Waiting) {
       counter++;
     }
   }

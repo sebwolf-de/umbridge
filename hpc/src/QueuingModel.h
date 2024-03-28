@@ -20,14 +20,15 @@
 namespace umbridge {
 class QueuingModel : public umbridge::Model {
   private:
-  static std::mutex m;
-  static std::condition_variable cv;
+  static std::mutex queueMutex;
+  static std::condition_variable requestFinished;
+  static std::condition_variable queuesChanged;
   const size_t numberOfInputs;
   const size_t numberOfOutputs;
   WorkerList& wl;
   JobQueue q;
 
-  static void wait(const Request::JobState& lock);
+  static void wait(const Request::RequestState& lock);
 
   public:
   static void processQueue(QueuingModel* qm);

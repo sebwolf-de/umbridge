@@ -4,10 +4,11 @@
 
 #include "QueuingModel.h"
 
-std::mutex umbridge::QueuingModel::m;
-std::condition_variable umbridge::QueuingModel::cv;
-std::mutex umbridge::WorkerList::m;
-std::mutex umbridge::JobQueue::m;
+std::condition_variable umbridge::QueuingModel::requestFinished;
+std::condition_variable umbridge::QueuingModel::queuesChanged;
+std::mutex umbridge::QueuingModel::queueMutex;
+std::mutex umbridge::WorkerList::workersMutex;
+std::mutex umbridge::JobQueue::jobsMutex;
 
 constexpr unsigned NumberOfInputs = 1;
 constexpr unsigned NumberOfOutputs = 1;
