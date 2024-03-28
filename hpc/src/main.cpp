@@ -1,7 +1,8 @@
 #include <iostream>
 
-#include "LoadBalancer.h"
+#include "spdlog/spdlog.h"
 
+#include "LoadBalancer.h"
 #include "QueuingModel.h"
 
 std::shared_ptr<std::condition_variable> umbridge::QueuingModel::requestFinished = std::make_shared<std::condition_variable>();

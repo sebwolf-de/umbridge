@@ -1,10 +1,12 @@
 #include "QueuingModel.h"
 
+#include "spdlog/spdlog.h"
+
 void umbridge::QueuingModel::waitUntilJobFinished(const Request::RequestState& lock) {
   std::unique_lock lk(queueMutex);
-  std::cerr << "Waiting for evaluation ..." << std::endl;
+  spdlog::debug("Waiting for evaluation ...");
   requestFinished->wait(lk, [&lock] { return lock == Request::RequestState::Finished; });
-  std::cerr << "...finished waiting." << std::endl;
+  spdlog::debug("...finished waiting.");
 }
 
 void umbridge::QueuingModel::processQueue(std::shared_ptr<QueuingModel>& qm) {

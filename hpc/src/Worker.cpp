@@ -1,11 +1,13 @@
 #include "Worker.h"
 
+#include "spdlog/spdlog.h"
+
 #include "WorkerList.h"
 
 void umbridge::Worker::processRequest(std::shared_ptr<umbridge::Request> r) {
   occupied = true;
   r->state = Request::RequestState::Processing;
-  std::cout << "Process request on " << url << ". This might take a while." << std::endl;
+  spdlog::info("Process request on {}. This might take a while.", url);
   umbridge::HTTPModel client(url, "forward");
 
   const std::vector<std::vector<double>> outputs = client.Evaluate(r->input, r->config);

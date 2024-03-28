@@ -3,12 +3,14 @@
 #include <filesystem>
 #include <string>
 
+#include "spdlog/spdlog.h"
+
 // run and get the result of command
 std::string getCommandOutput(const std::string& command) {
   FILE* pipe = popen(command.c_str(),
                      "r"); // execute the command and return the output as stream
   if (pipe == nullptr) {
-    std::cerr << "Failed to execute the command: " + command << std::endl;
+    spdlog::error("Failed to execute the command: {}.", command);
     return "";
   }
 
@@ -42,7 +44,7 @@ std::string readUrl(const std::string& filename) {
     url = fileContents;
     file.close();
   } else {
-    std::cerr << "Unable to open file " << filename << " ." << std::endl;
+    spdlog::error("Unable to open file {}.", filename);
   }
 
   // delete the line break
@@ -56,7 +58,6 @@ std::string readUrl(const std::string& filename) {
 // state = ["WAITING", "RUNNING", "FINISHED", "CANCELED"]
 bool waitForHQJobState(const std::string& jobId, const std::string& state) {
   const std::string command = "hq job info " + jobId + " | grep State | awk '{print $4}'";
-  // std::cout << "Checking runtime: " << command << std::endl;
   std::string jobStatus;
 
   do {
@@ -70,7 +71,7 @@ bool waitForHQJobState(const std::string& jobId, const std::string& state) {
     // Don't wait if there is an error or the job is ended
     if (jobStatus.empty() || (state != "FINISHED" && jobStatus == "FINISHED") ||
         jobStatus == "FAILED" || jobStatus == "CANCELED") {
-      std::cerr << "Wait for job status failure, status : " << jobStatus << std::endl;
+      spdlog::error("Wait for job status failure, status : {}.", jobStatus);
       return false;
     }
 
@@ -97,7 +98,6 @@ void umbridge::LoadBalancer::submitHQJob(const std::string& modelName,
     throw std::runtime_error("Job submission script not found: Check that file "
                              "'hq_script/job.sh' exists.");
   }
-  std::cout << hqCommand << std::endl;
 
   // Submit the HQ job and retrieve the HQ job ID.
   std::string jobId = getCommandOutput(hqCommand);
@@ -107,7 +107,7 @@ void umbridge::LoadBalancer::submitHQJob(const std::string& modelName,
     jobId.pop_back();
   }
 
-  std::cout << "Waiting for job " << jobId << " to start." << std::endl;
+  spdlog::info("Waiting for job {} to start.", jobId);
 
   // Wait for the HQ Job to start
   waitForHQJobState(jobId, "RUNNING");
@@ -117,7 +117,7 @@ void umbridge::LoadBalancer::submitHQJob(const std::string& modelName,
   waitForFile(urlFile);
 
   std::string const url = readUrl(urlFile);
-  std::cout << "Job " << jobId << " started, running on " << url << std::endl;
+  spdlog::info("Job {} started, running on {}.", jobId, url);
   wl.add(std::make_shared<Worker>(url));
 }
 

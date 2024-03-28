@@ -16,7 +16,9 @@ src/WorkerList.cpp
 )
 
 target_include_directories(load-balancer PUBLIC ../lib)
+target_include_directories(load-balancer PUBLIC external)
 
 add_library(umbridge ../lib/umbridge.cpp)
 target_link_libraries(load-balancer PUBLIC umbridge)
+
 

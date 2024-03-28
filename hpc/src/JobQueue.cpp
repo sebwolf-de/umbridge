@@ -1,8 +1,10 @@
 #include "JobQueue.h"
 
+#include "spdlog/spdlog.h"
+
 void umbridge::JobQueue::push(std::shared_ptr<Request> r) {
   requests.push_back(r);
-  std::cout << "Pushed request, now " << countWaiting() << " models are waiting." << std::endl;
+  spdlog::info("Pushed request, now {} models are waiting.", countWaiting());
 }
 
 std::shared_ptr<umbridge::Request> umbridge::JobQueue::firstWaiting() const {
