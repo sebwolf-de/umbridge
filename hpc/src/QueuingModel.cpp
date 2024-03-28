@@ -34,7 +34,7 @@ std::vector<std::size_t> umbridge::QueuingModel::GetOutputSizes(const json& conf
 
 std::vector<std::vector<double>>
     umbridge::QueuingModel::Evaluate(const std::vector<std::vector<double>>& inputs, json config) {
-  const std::shared_ptr<Request> r = std::make_shared<Request>(inputs, config);
+  std::shared_ptr<Request> r = std::make_shared<Request>(inputs, config);
   {
     std::unique_lock(JobQueue::jobsMutex);
     q.push(r);
