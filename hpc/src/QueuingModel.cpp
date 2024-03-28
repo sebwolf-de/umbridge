@@ -1,26 +1,26 @@
 #include "QueuingModel.h"
 
-void umbridge::QueuingModel::wait(const Request::RequestState& lock) {
+void umbridge::QueuingModel::waitUntilJobFinished(const Request::RequestState& lock) {
   std::unique_lock lk(queueMutex);
   std::cerr << "Waiting for evaluation ..." << std::endl;
-  requestFinished.wait(lk, [&lock] { return lock == Request::RequestState::Finished; });
+  requestFinished->wait(lk, [&lock] { return lock == Request::RequestState::Finished; });
   std::cerr << "...finished waiting." << std::endl;
 }
 
-void umbridge::QueuingModel::processQueue(QueuingModel* qm) {
+void umbridge::QueuingModel::processQueue(std::shared_ptr<QueuingModel>& qm) {
   while (true) {
     std::unique_lock lk(JobQueue::jobsMutex);
     if (!qm->q.empty()) {
       std::shared_ptr<Worker> availableWorker = qm->wl.getFreeWorker();
       const std::unique_lock<std::mutex> lk(umbridge::WorkerList::workersMutex);
       if (availableWorker != nullptr) {
-        const std::shared_ptr<Request> r = qm->q.firstWaiting();
-        availableWorker->cv = &requestFinished;
-        std::thread t(Worker::process, std::ref(availableWorker), r.get());
+        std::shared_ptr<Request> r = qm->q.firstWaiting();
+        availableWorker->cv = requestFinished;
+        std::thread t(Worker::process, std::ref(availableWorker), std::ref(r));
         t.detach();
       }
     }
-    queuesChanged.wait(lk);
+    queuesChanged->wait(lk);
   }
 }
 
@@ -40,12 +40,12 @@ std::vector<std::vector<double>>
     q.push(r);
   }
   // Notify queuesChanged, because a new request has been submitted.
-  queuesChanged.notify_all();
-  std::thread t(wait, std::ref(r->state));
+  queuesChanged->notify_all();
+  std::thread t(waitUntilJobFinished, std::ref(r->state));
   t.join();
 
   // Notify queuesChanged, because a request has been finished.
-  queuesChanged.notify_all();
+  queuesChanged->notify_all();
 
   return r->output;
 }

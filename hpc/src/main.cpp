@@ -4,8 +4,8 @@
 
 #include "QueuingModel.h"
 
-std::condition_variable umbridge::QueuingModel::requestFinished;
-std::condition_variable umbridge::QueuingModel::queuesChanged;
+std::shared_ptr<std::condition_variable> umbridge::QueuingModel::requestFinished = std::make_shared<std::condition_variable>();
+std::shared_ptr<std::condition_variable> umbridge::QueuingModel::queuesChanged = std::make_shared<std::condition_variable>();
 std::mutex umbridge::QueuingModel::queueMutex;
 std::mutex umbridge::WorkerList::workersMutex;
 std::mutex umbridge::JobQueue::jobsMutex;
@@ -21,10 +21,10 @@ int main(int argc, char** argv) {
   for (int i = 0; i < numberOfJobs; i++) {
     lb.submitHQJob("");
   }
-  umbridge::QueuingModel q("QueuingModel", NumberOfInputs, NumberOfOutputs, lb.wl);
-  std::thread t(umbridge::QueuingModel::processQueue, &q);
+  auto q = std::make_shared<umbridge::QueuingModel>("QueuingModel", NumberOfInputs, NumberOfOutputs, lb.wl);
+  std::thread t(umbridge::QueuingModel::processQueue, std::ref(q));
   t.detach();
-  const std::vector<umbridge::Model*> models = {&q};
+  const std::vector<umbridge::Model*> models = {q.get()};
   umbridge::serveModels(models, "0.0.0.0", Port, true, false);
 
   return 0;

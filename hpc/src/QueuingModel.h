@@ -21,17 +21,17 @@ namespace umbridge {
 class QueuingModel : public umbridge::Model {
   private:
   static std::mutex queueMutex;
-  static std::condition_variable requestFinished;
-  static std::condition_variable queuesChanged;
+  static std::shared_ptr<std::condition_variable> requestFinished;
+  static std::shared_ptr<std::condition_variable> queuesChanged;
   const size_t numberOfInputs;
   const size_t numberOfOutputs;
   WorkerList& wl;
   JobQueue q;
 
-  static void wait(const Request::RequestState& lock);
+  static void waitUntilJobFinished(const Request::RequestState& lock);
 
   public:
-  static void processQueue(QueuingModel* qm);
+  static void processQueue(std::shared_ptr<QueuingModel>& qm);
 
   QueuingModel(std::string name, size_t numberOfInputs, size_t numberOfOutputs, WorkerList& wl)
       : umbridge::Model(std::move(name)), numberOfInputs(numberOfInputs),

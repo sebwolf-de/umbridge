@@ -12,13 +12,13 @@
 namespace umbridge {
 class JobQueue {
   private:
-  std::vector<std::shared_ptr<Request>> requests;
+  std::vector<std::weak_ptr<Request>> requests;
 
   public:
   static std::mutex jobsMutex;
   JobQueue() = default;
 
-  void push(const std::shared_ptr<Request>& r);
+  void push(std::shared_ptr<Request> r);
   std::shared_ptr<Request> firstWaiting() const;
   bool empty() const;
   unsigned countWaiting() const;

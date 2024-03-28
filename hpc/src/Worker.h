@@ -14,15 +14,15 @@ class WorkerList;
 
 class Worker {
   public:
-  static void process(std::shared_ptr<Worker>& w, Request* r) { w->processRequest(r); }
+  static void process(std::shared_ptr<Worker>& w, std::shared_ptr<Request>& r) { w->processRequest(r); }
   bool occupied{};
   std::string url;
-  WorkerList* wl{nullptr};
-  std::condition_variable* cv{nullptr};
+  std::weak_ptr<WorkerList> wl;
+  std::weak_ptr<std::condition_variable> cv;
 
   Worker(std::string url) : url(std::move(url)){};
 
-  void processRequest(Request* r);
+  void processRequest(std::shared_ptr<Request> r);
 };
 
 } // namespace umbridge

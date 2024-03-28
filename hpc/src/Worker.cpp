@@ -2,7 +2,7 @@
 
 #include "WorkerList.h"
 
-void umbridge::Worker::processRequest(umbridge::Request* r) {
+void umbridge::Worker::processRequest(std::shared_ptr<umbridge::Request> r) {
   occupied = true;
   r->state = Request::RequestState::Processing;
   std::cout << "Process request on " << url << ". This might take a while." << std::endl;
@@ -14,8 +14,8 @@ void umbridge::Worker::processRequest(umbridge::Request* r) {
     r->output.push_back(output);
   }
   r->state = Request::RequestState::Finished;
-  if (cv != nullptr) {
-    cv->notify_all();
+  if (!cv.expired()) {
+    cv.lock()->notify_all();
   }
   occupied = false;
 }
