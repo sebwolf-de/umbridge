@@ -14,7 +14,7 @@ class WorkerList;
 
 class Worker {
   public:
-  static void process(std::shared_ptr<Worker>& w, std::shared_ptr<Request>& r) { w->processRequest(r); }
+  static void process(std::shared_ptr<Worker> w, std::shared_ptr<Request> r) { w->processRequest(r); }
   bool occupied{};
   std::string url;
   std::weak_ptr<WorkerList> wl;

@@ -5,7 +5,10 @@
 #include "WorkerList.h"
 
 void umbridge::Worker::processRequest(std::shared_ptr<umbridge::Request> r) {
-  occupied = true;
+  {
+    std::unique_lock<std::mutex> lk(WorkerList::workersMutex);
+    occupied = true;
+  }
   r->state = Request::RequestState::Processing;
   spdlog::info("Process request on {}. This might take a while.", url);
   umbridge::HTTPModel client(url, "forward");
@@ -19,5 +22,8 @@ void umbridge::Worker::processRequest(std::shared_ptr<umbridge::Request> r) {
   if (!cv.expired()) {
     cv.lock()->notify_all();
   }
-  occupied = false;
+  {
+    std::unique_lock<std::mutex> lk(WorkerList::workersMutex);
+    occupied = false;
+  }
 }

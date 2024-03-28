@@ -2,12 +2,16 @@
 
 #include "spdlog/spdlog.h"
 
+std::mutex umbridge::JobQueue::vectorMutex;
+
 void umbridge::JobQueue::push(std::shared_ptr<Request> r) {
+  std::unique_lock<std::mutex> lk(vectorMutex);
   requests.push_back(r);
   spdlog::info("Pushed request, now {} models are waiting.", countWaiting());
 }
 
 std::shared_ptr<umbridge::Request> umbridge::JobQueue::firstWaiting() const {
+  std::unique_lock<std::mutex> lk(vectorMutex);
   for (auto r : requests) {
     if (r.expired()) {
       continue;

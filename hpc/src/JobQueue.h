@@ -16,6 +16,7 @@ class JobQueue {
 
   public:
   static std::mutex jobsMutex;
+  static std::mutex vectorMutex;
   JobQueue() = default;
 
   void push(std::shared_ptr<Request> r);

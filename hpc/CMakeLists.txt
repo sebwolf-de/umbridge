@@ -20,5 +20,7 @@ target_include_directories(load-balancer PUBLIC external)
 
 add_library(umbridge ../lib/umbridge.cpp)
 target_link_libraries(load-balancer PUBLIC umbridge)
+target_compile_options(load-balancer PRIVATE -fsanitize=address)
+target_link_options(load-balancer PRIVATE -fsanitize=address)
 
 

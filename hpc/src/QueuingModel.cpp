@@ -11,18 +11,19 @@ void umbridge::QueuingModel::waitUntilJobFinished(const Request::RequestState& l
 
 void umbridge::QueuingModel::processQueue(std::shared_ptr<QueuingModel>& qm) {
   while (true) {
-    std::unique_lock lk(JobQueue::jobsMutex);
+    std::unique_lock lockJobs(JobQueue::jobsMutex);
     if (!qm->q.empty()) {
+      const std::unique_lock<std::mutex> lockWorkers(umbridge::WorkerList::workersMutex);
       std::shared_ptr<Worker> availableWorker = qm->wl.getFreeWorker();
-      const std::unique_lock<std::mutex> lk(umbridge::WorkerList::workersMutex);
       if (availableWorker != nullptr) {
         std::shared_ptr<Request> r = qm->q.firstWaiting();
         availableWorker->cv = requestFinished;
-        std::thread t(Worker::process, std::ref(availableWorker), std::ref(r));
+        availableWorker->occupied = true;
+        std::thread t(Worker::process, availableWorker, r);
         t.detach();
       }
     }
-    queuesChanged->wait(lk);
+    queuesChanged->wait(lockJobs);
   }
 }
 
