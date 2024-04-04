@@ -39,12 +39,12 @@ The load balancer consists of two binaries:
   ```
   Make sure that your batch job has exactly `N x M` MPI slots.
   
-   Adapt the configuration in ``hpc/hq_scripts/submit.sh`` to your needs.
+   Adapt the configuration in ``hpc/job_scripts/submit.sh`` to your needs.
 
 
 2. **Configure model job**
 
-   Adapt the configuration in ``hpc/hq_scripts/job.sh`` to your needs:
+   Adapt the configuration in ``hpc/job_scripts/job.sh`` to your needs:
    * Specify what UM-Bridge model server to run,
    * and set the directory of your load balancer binary in `load_balancer_dir`.
 

@@ -72,7 +72,7 @@ int main(int argc, char** argv) {
     setenv("SERVER_ID", std::to_string(serverId).c_str(), 1);
 
     std::array<char, 512> outputBuffer;
-    const std::string command = "hq_scripts/job.sh 2&>1";
+    const std::string command = "job_scripts/job.sh 2&>1";
     FILE* pipe = popen(command.c_str(), "r");
     while (fgets(outputBuffer.data(), 512, pipe) != nullptr) {
       spdlog::info(std::string(outputBuffer.data()));

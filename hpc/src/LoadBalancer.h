@@ -16,9 +16,7 @@ class LoadBalancer {
 
   public:
   WorkerList wl;
-  LoadBalancer();
-  ~LoadBalancer();
-  // void submitHQJob(const std::string& modelName, bool forceDefaultSubmissionScript = false);
+  LoadBalancer() = default;
   void queryUrls(int numberOfWorkers);
 };
 }; // namespace umbridge

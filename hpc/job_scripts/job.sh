@@ -1,8 +1,8 @@
 #! /bin/bash
 TZ='Europe/Berlin' date
 
-# Launch model server, send back server URL
-# and wait to ensure that HQ won't schedule any more jobs to this allocation.
+# Launch model server, send back server URL,
+# then wait to keep the server alive.
 
 function get_avaliable_port {
     # Define the range of ports to select from
@@ -36,14 +36,14 @@ mpiexec.hydra -np $RANKS -machinefile $MACHINE_FILE /usr/bin/hostname
 module load intel
 module load python3/3.9.2
 ### TODO adapt the path here
-cd $WORK/UQ/Seis-Bridge/tpv13
-python3 tpv13server.py &
+#cd $WORK/UQ/Seis-Bridge/tpv13
+#python3 tpv13server.py &
 
-#cd /home1/09160/sebwolf/UQ/mtmc/models
-#python3 loglikelihood_gauss.py -c &
+cd /work/UQ/mtmc/models
+python3 loglikelihood_gauss.py -c &
 
 ### TODO adapt the path here
-load_balancer_dir="${HOME}/UQ/umbridge/hpc/build"
+load_balancer_dir="/work/UQ/umbridge/hpc/build"
 
 host=$(hostname -I | awk '{print $1}')
 
@@ -54,7 +54,7 @@ done
 
 echo "Started server successfully, running on ${host}:${port}"
 
-# Write server URL to file identified by HQ job ID.
+# Write server URL to file identified by SERVER_ID.
 mkdir -p "$load_balancer_dir/urls"
 echo "http://$host:$port" > "$load_balancer_dir/urls/url-$SERVER_ID.txt"
 
