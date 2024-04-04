@@ -20,6 +20,8 @@ Checks: '-*, clang-diagnostic-*, llvm-*, -llvm-else-after-return, -llvm-header-g
 #performance-unnecessary-value-param 	Yes
 WarningsAsErrors: '*'
 CheckOptions:
+  - key:             performance-unnecessary-value-param.AllowedTypes
+    value:           shared_ptr
 #  - key:             readability-identifier-naming.AbstractClassCase
 #    value:           CamelCase
 #  - key:             readability-identifier-naming.AbstractClassPrefix

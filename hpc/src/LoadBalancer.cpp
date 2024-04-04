@@ -125,28 +125,28 @@ void umbridge::LoadBalancer::submitHQJob(const std::string& modelName,
 
 void umbridge::LoadBalancer::queryUrls(int numberOfWorkers) {
   for (int i = 0; i < numberOfWorkers; i++) {
-  std::string jobId = std::to_string(i);
+    std::string jobId = std::to_string(i);
 
-  // Also wait until job is running and url file is written
-  spdlog::info("Waiting for job {}.", jobId);
-  std::string const urlFile = "./urls/url-" + jobId + ".txt";
-  waitForFile(urlFile);
+    // Also wait until job is running and url file is written
+    spdlog::info("Waiting for job {}.", jobId);
+    std::string const urlFile = "./urls/url-" + jobId + ".txt";
+    waitForFile(urlFile);
 
-  std::string const url = readUrl(urlFile);
-  spdlog::info("Job {} started, running on {}.", jobId, url);
-  wl.add(std::make_shared<Worker>(url));
-}
+    std::string const url = readUrl(urlFile);
+    spdlog::info("Job {} started, running on {}.", jobId, url);
+    wl.add(std::make_shared<Worker>(url));
+  }
 }
 
 void umbridge::LoadBalancer::startServer() {
-  //std::system("hq server stop &> /dev/null");
-  //std::filesystem::remove_all("./urls");
+  // std::system("hq server stop &> /dev/null");
+  // std::filesystem::remove_all("./urls");
 
-  //std::system("hq server start &");
-  //sleep(1); // Workaround: give the HQ server enough time to start.
+  // std::system("hq server start &");
+  // sleep(1); // Workaround: give the HQ server enough time to start.
 
   // Create HQ allocation queue
-  //std::system("hq_scripts/allocation_queue.sh");
+  // std::system("hq_scripts/allocation_queue.sh");
 }
 
 void umbridge::LoadBalancer::stopServer() {

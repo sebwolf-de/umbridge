@@ -6,7 +6,7 @@
 
 void umbridge::Worker::processRequest(std::shared_ptr<umbridge::Request> r) {
   {
-    std::unique_lock<std::mutex> lk(WorkerList::workersMutex);
+    const std::unique_lock<std::mutex> lk(WorkerList::workersMutex);
     occupied = true;
   }
   r->state = Request::RequestState::Processing;
@@ -23,7 +23,7 @@ void umbridge::Worker::processRequest(std::shared_ptr<umbridge::Request> r) {
     cv.lock()->notify_all();
   }
   {
-    std::unique_lock<std::mutex> lk(WorkerList::workersMutex);
+    const std::unique_lock<std::mutex> lk(WorkerList::workersMutex);
     occupied = false;
   }
 }

@@ -4,6 +4,7 @@
 #include <chrono>
 #include <condition_variable>
 #include <thread>
+#include <utility>
 #include <vector>
 
 #include "Request.h"
@@ -14,7 +15,9 @@ class WorkerList;
 
 class Worker {
   public:
-  static void process(std::shared_ptr<Worker> w, std::shared_ptr<Request> r) { w->processRequest(r); }
+  static void process(std::shared_ptr<Worker> w, std::shared_ptr<Request> r) {
+    w->processRequest(r);
+  }
   bool occupied{};
   std::string url;
   std::weak_ptr<WorkerList> wl;

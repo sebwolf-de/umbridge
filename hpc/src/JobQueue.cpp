@@ -5,14 +5,14 @@
 std::mutex umbridge::JobQueue::vectorMutex;
 
 void umbridge::JobQueue::push(std::shared_ptr<Request> r) {
-  std::unique_lock<std::mutex> lk(vectorMutex);
+  const std::unique_lock<std::mutex> lk(vectorMutex);
   requests.push_back(r);
   spdlog::info("Pushed request, now {} models are waiting.", countWaiting());
 }
 
 std::shared_ptr<umbridge::Request> umbridge::JobQueue::firstWaiting() const {
-  std::unique_lock<std::mutex> lk(vectorMutex);
-  for (auto r : requests) {
+  const std::unique_lock<std::mutex> lk(vectorMutex);
+  for (const std::weak_ptr<umbridge::Request> r : requests) {
     if (r.expired()) {
       continue;
     } else {
@@ -29,7 +29,7 @@ bool umbridge::JobQueue::empty() const { return firstWaiting() == nullptr; }
 
 unsigned umbridge::JobQueue::countWaiting() const {
   unsigned counter = 0;
-  for (const auto& r : requests) {
+  for (const std::weak_ptr<umbridge::Request> r : requests) {
     if (r.expired()) {
       continue;
     }

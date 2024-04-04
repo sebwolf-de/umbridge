@@ -20,9 +20,9 @@ class JobQueue {
   JobQueue() = default;
 
   void push(std::shared_ptr<Request> r);
-  std::shared_ptr<Request> firstWaiting() const;
-  bool empty() const;
-  unsigned countWaiting() const;
+  [[nodiscard]] std::shared_ptr<Request> firstWaiting() const;
+  [[nodiscard]] bool empty() const;
+  [[nodiscard]] unsigned countWaiting() const;
 };
 
 } // namespace umbridge
