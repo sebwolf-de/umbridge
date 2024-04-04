@@ -29,7 +29,11 @@ target_link_libraries(load-client PUBLIC umbridge)
 find_package(MPI REQUIRED)
 target_link_libraries(load-server PUBLIC MPI::MPI_CXX)
 
-target_compile_options(load-client PRIVATE -fsanitize=address)
-target_link_options(load-client PRIVATE -fsanitize=address)
+option(ADDRESS_SANITIZER "Use address sanitzer in debug mode" OFF)
+
+if (ADDRESS_SANITIZER)
+  target_link_libraries(load-client PRIVATE debug -fno-omit-frame-pointer -fsanitize=address -fsanitize-recover=address -static-libasan)
+  target_link_libraries(load-server PRIVATE debug -fno-omit-frame-pointer -fsanitize=address -fsanitize-recover=address -static-libasan)
+endif()
 
 
