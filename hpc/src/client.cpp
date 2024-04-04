@@ -19,9 +19,7 @@ int main(int argc, char** argv) {
   assert(argc == 2);
   const int numberOfJobs = std::atoi(argv[1]);
   umbridge::LoadBalancer lb;
-  for (int i = 0; i < numberOfJobs; i++) {
-    lb.submitHQJob("");
-  }
+  lb.queryUrls(numberOfJobs);
   auto q = std::make_shared<umbridge::QueuingModel>("QueuingModel", NumberOfInputs, NumberOfOutputs, lb.wl);
   std::thread t(umbridge::QueuingModel::processQueue, std::ref(q));
   t.detach();

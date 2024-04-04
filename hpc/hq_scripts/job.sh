@@ -1,6 +1,4 @@
 #! /bin/bash
-### TODO Set the same number as $M in allocation_queue.sh here.
-#HQ --nodes 3
 TZ='Europe/Berlin' date
 
 # Launch model server, send back server URL
@@ -25,7 +23,7 @@ function get_avaliable_port {
 
 port=$(get_avaliable_port)
 export PORT=$port
-export RANKS=$(wc -l $HQ_NODE_FILE | awk '{print $1}')
+export RANKS=$(wc -l $MACHINE_FILE | awk '{print $1}')
 
 unset OMPI_MCA_plm_slurm_args
 unset PRTE_MCA_plm_slurm_args
@@ -33,7 +31,7 @@ unset HYDRA_LAUNCHER_EXTRA_ARGS
 unset I_MPI_HYDRA_BOOTSTRAP_EXEC_EXTRA_ARGS
 export I_MPI_HYDRA_BOOTSTRAP=ssh
 export NODE_TASKS_PPN_INFO=1,0_
-mpiexec.hydra -np $RANKS -machinefile $HQ_NODE_FILE /usr/bin/hostname
+mpiexec.hydra -np $RANKS -machinefile $MACHINE_FILE /usr/bin/hostname
 
 module load intel
 module load python3/3.9.2
@@ -58,6 +56,6 @@ echo "Started server successfully, running on ${host}:${port}"
 
 # Write server URL to file identified by HQ job ID.
 mkdir -p "$load_balancer_dir/urls"
-echo "http://$host:$port" > "$load_balancer_dir/urls/url-$HQ_JOB_ID.txt"
+echo "http://$host:$port" > "$load_balancer_dir/urls/url-$SERVER_ID.txt"
 
 sleep infinity # keep the job occupied
