@@ -1,71 +1,71 @@
 # HPC
 
-This load balancer allows any scaling up UM-Bridge applications to HPC systems. To the client, it behaves like a regular UM-Bridge server, except that i can process concurrent model evaluation requests. When it receives requests, it will adaptively spawn model server instances on the HPC system, and forward evaluation requests to them. To each model server instance, the load balancer in turn appears as a regular UM-Bridge client.
+This load balancer allows any scaling up UM-Bridge applications to HPC systems. To the client, it behaves like a regular UM-Bridge server, except that it can process concurrent model evaluation requests. 
+It orchestrates several servers. When it receives requests, it will queue them until a server instance on the HPC system is available, and then forward evaluation requests to them. To each model server instance, the load balancer in turn appears as a regular UM-Bridge client.
 
 ## Installation
 
-1. **Build the load balancer**
-  
-   Clone the UM-Bridge repository.
- 
-   ```
-   git clone https://github.com/UM-Bridge/umbridge.git
-   ```
-   
-   Then navigate to the `hpc` directory.
+Clone the UM-Bridge repository.
 
-   ```
-   cd umbridge/hpc
-   ```
-   
-   Finally, compile the load balancer. Depending on your HPC system, you likely have to load a module providing a recent c++ compiler.
+```
+git clone https://github.com/UM-Bridge/umbridge.git
+```
 
-   ```
-   make
+Then navigate to the `hpc` directory.
+
+```
+cd umbridge/hpc
+```
+
+Finally, compile the load balancer. Depending on your HPC system, you likely have to load a module providing a recent c++ compiler.
+
+```
+mkdir build && cd build
+cmake ..
+make
    ```
 
-2. **Download HyperQueue**
-   
-   Download HyperQueue from the most recent release at https://github.com/It4innovations/hyperqueue/releases and place the `hq` binary in the `hpc` directory next to the load balancer.
 
 ## Usage
 
-The load balancer is primarily intended to run on a login node.
+The load balancer consists of two binaries:
 
-1. **Configure resource allocation**
+1. **Load Server**
 
-   The load balancer instructs HyperQueue to allocate batches of resources on the HPC system, depending on demand for model evaluations. HyperQueue will submit SLURM or PBS jobs on the HPC system when needed, scheduling requested model runs within those jobs. When demand decreases, HyperQueue will cancel some of those jobs again.
+  The server runs in a slurm  or PBS allocation. It will start `N` different umbridge servers, each working on `N` nodes.
+  Run the server as 
+  ```
+  mpirun ./load-server N M
+  ```
+  Make sure that your batch job has exactly `N x M` MPI slots.
   
-   Adapt the configuration in ``hpc/hq_scripts/allocation_queue.sh`` to your needs.
+   Adapt the configuration in ``hpc/hq_scripts/submit.sh`` to your needs.
 
-   For example, when running a very fast UM-Bridge model on an HPC cluster, it is advisable to choose medium-sized jobs for resource allocation. That will avoid submitting large numbers of jobs to the HPC system's scheduler, while HyperQueue itself will handle large numbers of small model runs within those allocated jobs.
 
 2. **Configure model job**
 
    Adapt the configuration in ``hpc/hq_scripts/job.sh`` to your needs:
    * Specify what UM-Bridge model server to run,
-   * set `#HQ` variables at the top to specify what resources each instance should receive,
    * and set the directory of your load balancer binary in `load_balancer_dir`.
 
    Importantly, the UM-Bridge model server must serve its models at the port specified by the environment variable `PORT`. The value of `PORT` is automatically determined by `job.sh`, avoiding potential conflicts if multiple servers run on the same compute node.
+   If the model server runs an MPI job itself, be sure to use `mpirun -hostfile $MACHINE_FILE`.
+   The load server stores the hostnames for some subjobs in a file and `$MACHINE_FILE` points to the correct file.
 
-   If your job is supposed to span multiple compute nodes via MPI, make sure that you forward the nodes HyperQueue allocates to you in `HQ_NODE_FILE` to MPI. See [https://it4innovations.github.io/hyperqueue/stable/jobs/multinode/](https://it4innovations.github.io/hyperqueue/stable/jobs/multinode/#running-mpi-tasks) for instructions.
 
-4. **Run load balancer**
+3. **Load Client**
 
-   Navigate to the `hpc` directory and execute the load balancer.
+   The `load-client` is supposed to run on the login node. It receives evaluation requests, queues them and forwards them to available workers.
+   You have to tell the `load-client` how many forward models can be evaluated in parallel.
 
    ```
-   ./load-balancer
+   ./load-client N
    ```
 
-5. **Connect from client**
+4. **Connect from client**
 
    Once running, you can connect to the load balancer from any UM-Bridge client on the login node via `http://localhost:4242`. To the client, it will appear like any other UM-Bridge server, except that it can process concurrent evaluation requests.
-
-## (Optional) Varying resource requirements per model (e.g. for multilevel / multifidelity)
-
-If your UM-Bridge server provides multiple models, you can specify different resource requirements for each of them. Define a separate job script ``hpc/hq_scripts/job_<model_name>.sh`` for each model that needs different resources than what you defined in the default ``job.sh``.
+   The model name is `QueuingModel`.
 
 ## (Optional) Running clients on your own machine while offloading runs to HPC
 
