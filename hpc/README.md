@@ -35,7 +35,7 @@ The load balancer consists of two binaries:
   The server runs in a slurm  or PBS allocation. It will start `N` different umbridge servers, each working on `N` nodes.
   Run the server as 
   ```
-  mpirun ./load-server N M
+  mpirun -n $(expr $N \* $M) ./load-server $N $M
   ```
   Make sure that your batch job has exactly `N x M` MPI slots.
   
@@ -59,7 +59,7 @@ The load balancer consists of two binaries:
    You have to tell the `load-client` how many forward models can be evaluated in parallel.
 
    ```
-   ./load-client N
+   ./load-client $N
    ```
 
 4. **Connect from client**
