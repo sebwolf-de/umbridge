@@ -3,7 +3,6 @@
 
 #include <vector>
 
-#include <httplib.h>
 #include <json.hpp>
 
 namespace umbridge {

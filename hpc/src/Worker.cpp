@@ -1,6 +1,7 @@
 #include "Worker.h"
 
 #include "spdlog/spdlog.h"
+#include "umbridge.h"
 
 #include "WorkerList.h"
 

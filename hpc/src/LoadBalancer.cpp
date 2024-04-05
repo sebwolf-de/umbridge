@@ -1,6 +1,7 @@
 #include "LoadBalancer.h"
 
 #include <filesystem>
+#include <fstream>
 #include <string>
 
 #include "spdlog/spdlog.h"
@@ -39,7 +40,7 @@ std::string readUrl(const std::string& filename) {
   std::ifstream file(filename);
   std::string url;
   if (file.is_open()) {
-    std::string const fileContents((std::istreambuf_iterator<char>(file)),
+    const std::string fileContents((std::istreambuf_iterator<char>(file)),
                                    (std::istreambuf_iterator<char>()));
     url = fileContents;
     file.close();
@@ -61,10 +62,10 @@ void umbridge::LoadBalancer::queryUrls(int numberOfWorkers) {
 
     // Also wait until job is running and url file is written
     spdlog::info("Waiting for job {}.", jobId);
-    std::string const urlFile = "./urls/url-" + jobId + ".txt";
+    const std::string urlFile = "./urls/url-" + jobId + ".txt";
     waitForFile(urlFile);
 
-    std::string const url = readUrl(urlFile);
+    const std::string url = readUrl(urlFile);
     spdlog::info("Job {} started, running on {}.", jobId, url);
     wl.add(std::make_shared<Worker>(url));
   }

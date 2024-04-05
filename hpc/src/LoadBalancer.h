@@ -1,11 +1,6 @@
 #ifndef LOADBALANCER_H
 #define LOADBALANCER_H
 
-#include <string>
-#include <vector>
-
-#include <umbridge.h>
-
 #include "WorkerList.h"
 
 namespace umbridge {

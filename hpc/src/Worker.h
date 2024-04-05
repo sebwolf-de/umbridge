@@ -1,11 +1,10 @@
 #ifndef WORKER_H
 #define WORKER_H
 
-#include <chrono>
 #include <condition_variable>
-#include <thread>
+#include <memory>
+#include <string>
 #include <utility>
-#include <vector>
 
 #include "Request.h"
 

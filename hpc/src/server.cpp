@@ -1,9 +1,17 @@
+#include <algorithm>
 #include <array>
+#include <bits/posix1_lim.h>
+#include <cassert>
+#include <cstdio>
+#include <cstdlib>
 #include <fstream>
+#include <ostream>
+#include <cstdio>
+#include <cstdlib>
 #include <string>
 #include <vector>
 
-#include <limits.h>
+#include <climits>
 #include <mpi.h>
 #include <unistd.h>
 
@@ -36,7 +44,8 @@ int main(int argc, char** argv) {
   int worldSize;
   MPI_Comm_size(MPI_COMM_WORLD, &worldSize);
   if (numberOfServers * ranksPerServer != worldSize) {
-    spdlog::error("I am supposed to run {} servers, each with {} ranks. Expected {} ranks, but got {}. Aborting now.",
+    spdlog::error("I am supposed to run {} servers, each with {} ranks. Expected {} ranks, but got "
+                  "{}. Aborting now.",
                   numberOfServers,
                   ranksPerServer,
                   numberOfServers * ranksPerServer,
@@ -70,25 +79,27 @@ int main(int argc, char** argv) {
     FILE* outPipe = popen(command.c_str(), "r");
 
     std::string logFile;
-    auto slurmJobId = getenv("SLURM_JOBID");
+    auto* slurmJobId = getenv("SLURM_JOBID");
     if (slurmJobId != nullptr) {
-      logFile = std::string(get_current_dir_name()) + "/logs/job-" + std::string(slurmJobId) + "_server-" + std::to_string(serverId) + ".log";
-    } else  {
-      logFile = std::string(get_current_dir_name()) + "/logs/server-" + std::to_string(serverId) + ".log";
+      logFile = std::string(get_current_dir_name()) + "/logs/job-" + std::string(slurmJobId) +
+                "_server-" + std::to_string(serverId) + ".log";
+    } else {
+      logFile =
+          std::string(get_current_dir_name()) + "/logs/server-" + std::to_string(serverId) + ".log";
     }
-    
+
     auto logger = spdlog::basic_logger_mt("SeisSol-Logger", logFile);
-    logger->set_pattern("%v");  
+    logger->set_pattern("%v");
 
     std::array<char, 512> outputBuffer;
     while (fgets(outputBuffer.data(), 512, outPipe) != nullptr) {
-        std::string message(outputBuffer.data());
-        message.erase(std::remove(message.begin(), message.end(), '\n'), message.cend());
-        if (message.rfind("Started server successfully", 0) == 0) {
-          spdlog::info(message);
-        }
-        logger->info(message);
-        logger->flush();
+      std::string message(outputBuffer.data());
+      message.erase(std::remove(message.begin(), message.end(), '\n'), message.cend());
+      if (message.rfind("Started server successfully", 0) == 0) {
+        spdlog::info(message);
+      }
+      logger->info(message);
+      logger->flush();
     }
   } else {
     spdlog::info("I will idle");

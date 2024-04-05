@@ -1,9 +1,18 @@
-#include <iostream>
+#include <cassert>
+#include <condition_variable>
+#include <cstdlib>
+#include <functional>
+#include <memory>
+#include <mutex>
+#include <thread>
+#include <vector>
 
-#include "spdlog/spdlog.h"
+#include "JobQueue.h"
+#include "WorkerList.h"
 
 #include "LoadBalancer.h"
 #include "QueuingModel.h"
+#include "umbridge.h"
 
 std::shared_ptr<std::condition_variable> umbridge::QueuingModel::requestFinished =
     std::make_shared<std::condition_variable>();

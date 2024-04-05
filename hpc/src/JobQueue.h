@@ -2,10 +2,9 @@
 #define JOBQUEUE_H
 
 #include <cassert>
-#include <iostream>
+#include <memory>
+#include <mutex>
 #include <vector>
-
-#include <umbridge.h>
 
 #include "Request.h"
 

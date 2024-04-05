@@ -1,6 +1,11 @@
 #include "JobQueue.h"
 
+#include <memory>
+#include <mutex>
+
 #include "spdlog/spdlog.h"
+
+#include "Request.h"
 
 std::mutex umbridge::JobQueue::vectorMutex;
 
@@ -12,7 +17,7 @@ void umbridge::JobQueue::push(std::shared_ptr<Request> r) {
 
 std::shared_ptr<umbridge::Request> umbridge::JobQueue::firstWaiting() const {
   const std::unique_lock<std::mutex> lk(vectorMutex);
-  for (const std::weak_ptr<umbridge::Request> r : requests) {
+  for (const auto& r : requests) {
     if (r.expired()) {
       continue;
     } else {
@@ -29,7 +34,7 @@ bool umbridge::JobQueue::empty() const { return firstWaiting() == nullptr; }
 
 unsigned umbridge::JobQueue::countWaiting() const {
   unsigned counter = 0;
-  for (const std::weak_ptr<umbridge::Request> r : requests) {
+  for (const auto& r : requests) {
     if (r.expired()) {
       continue;
     }

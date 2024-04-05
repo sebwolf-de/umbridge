@@ -1,10 +1,10 @@
 #ifndef QUEUINGMODEL_H
 #define QUEUINGMODEL_H
 
-#include <chrono>
 #include <cmath>
 #include <condition_variable>
-#include <linux/limits.h>
+#include <cstddef>
+#include <memory>
 #include <mutex>
 #include <string>
 #include <utility>
