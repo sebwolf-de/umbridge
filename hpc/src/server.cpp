@@ -66,6 +66,7 @@ int main(int argc, char** argv) {
         std::string(get_current_dir_name()) + "/logs/server-" + std::to_string(serverId) + ".log";
     auto logger = spdlog::basic_logger_mt("SeisSol-Logger", logFile);
     spdlog::set_default_logger(logger);
+    spdlog::set_pattern("%v");
 
     writeServer(serverFile, allHostnames, worldRank, worldRank + ranksPerServer);
     setenv("MACHINE_FILE", serverFile.c_str(), 1);
