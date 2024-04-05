@@ -36,15 +36,14 @@ int main(int argc, char** argv) {
   int worldSize;
   MPI_Comm_size(MPI_COMM_WORLD, &worldSize);
   if (numberOfServers * ranksPerServer != worldSize) {
-    spdlog::error("I am supposed to run {} servers, each with {} ranks. Expected {} ranks, but got "
-                  "}. Aborting now",
+    spdlog::error("I am supposed to run {} servers, each with {} ranks. Expected {} ranks, but got {}. Aborting now.",
                   numberOfServers,
                   ranksPerServer,
                   numberOfServers * ranksPerServer,
                   worldSize);
+    MPI_Finalize();
     return -1;
   }
-
   std::array<char, HOST_NAME_MAX> myHostname;
   gethostname(myHostname.data(), HOST_NAME_MAX);
   std::vector<std::array<char, HOST_NAME_MAX>> allHostnames(worldSize);
@@ -62,21 +61,34 @@ int main(int argc, char** argv) {
     const int serverId = worldRank / ranksPerServer;
     const std::string serverFile = std::string(get_current_dir_name()) + "/servers/server-" +
                                    std::to_string(serverId) + ".txt";
-    const std::string logFile =
-        std::string(get_current_dir_name()) + "/logs/server-" + std::to_string(serverId) + ".log";
-    auto logger = spdlog::basic_logger_mt("SeisSol-Logger", logFile);
-    spdlog::set_default_logger(logger);
-    spdlog::set_pattern("%v");
 
     writeServer(serverFile, allHostnames, worldRank, worldRank + ranksPerServer);
     setenv("MACHINE_FILE", serverFile.c_str(), 1);
     setenv("SERVER_ID", std::to_string(serverId).c_str(), 1);
 
+    const std::string command = "job_scripts/job.sh 2>&1";
+    FILE* outPipe = popen(command.c_str(), "r");
+
+    std::string logFile;
+    auto slurmJobId = getenv("SLURM_JOBID");
+    if (slurmJobId != nullptr) {
+      logFile = std::string(get_current_dir_name()) + "/logs/job-" + std::string(slurmJobId) + "_server-" + std::to_string(serverId) + ".log";
+    } else  {
+      logFile = std::string(get_current_dir_name()) + "/logs/server-" + std::to_string(serverId) + ".log";
+    }
+    
+    auto logger = spdlog::basic_logger_mt("SeisSol-Logger", logFile);
+    logger->set_pattern("%v");  
+
     std::array<char, 512> outputBuffer;
-    const std::string command = "job_scripts/job.sh 2&>1";
-    FILE* pipe = popen(command.c_str(), "r");
-    while (fgets(outputBuffer.data(), 512, pipe) != nullptr) {
-      spdlog::info(std::string(outputBuffer.data()));
+    while (fgets(outputBuffer.data(), 512, outPipe) != nullptr) {
+        std::string message(outputBuffer.data());
+        message.erase(std::remove(message.begin(), message.end(), '\n'), message.cend());
+        if (message.rfind("Started server successfully", 0) == 0) {
+          spdlog::info(message);
+        }
+        logger->info(message);
+        logger->flush();
     }
   } else {
     spdlog::info("I will idle");
