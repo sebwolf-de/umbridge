@@ -36,14 +36,14 @@ mpiexec.hydra -np $RANKS -machinefile $MACHINE_FILE /usr/bin/hostname
 module load intel
 module load python3/3.9.2
 ### TODO adapt the path here
-#cd $WORK/UQ/Seis-Bridge/tpv13
-#python3 tpv13server.py &
+cd $WORK/UQ/Seis-Bridge/tpv13
+python3 tpv13server.py &
 
-cd /work/UQ/mtmc/models
-python3 loglikelihood_gauss.py -c &
+#cd $HOME/UQ/models/
+#python3 loglikelihood_gauss_1_1.py -hq &
 
 ### TODO adapt the path here
-load_balancer_dir="/work/UQ/umbridge/hpc/build"
+load_balancer_dir="${HOME}UQ/umbridge/"
 
 host=$(hostname -I | awk '{print $1}')
 
