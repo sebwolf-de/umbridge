@@ -43,14 +43,14 @@ int main(int argc, char** argv) {
   MPI_Comm_rank(MPI_COMM_WORLD, &worldRank);
   int worldSize;
   MPI_Comm_size(MPI_COMM_WORLD, &worldSize);
-  if (numberOfServers * ranksPerServer != worldSize) {
+  if (numberOfServers * ranksPerServer + 1 != worldSize) {
     spdlog::error("I am supposed to run {} servers, each with {} ranks. Expected {} ranks, but got "
-                  "{}. Aborting now.",
+                  "{}. Note that I reserve the first rank for the client. Aborting now.",
                   numberOfServers,
                   ranksPerServer,
                   numberOfServers * ranksPerServer,
                   worldSize);
-    MPI_Finalize();
+    MPI_Abort(MPI_COMM_WORLD, -1);
     return -1;
   }
   std::array<char, HOST_NAME_MAX> myHostname;
@@ -64,45 +64,69 @@ int main(int argc, char** argv) {
                 MPI_CHAR,
                 MPI_COMM_WORLD);
 
-  if (worldRank % ranksPerServer == 0) {
-    spdlog::info("I will host a server on {}", myHostname.data());
+  // Note that the first rank is reserved for the load-client.
+  if (worldRank == 0) {
+    std::vector<int> runningServers(numberOfServers);
+    std::vector<MPI_Request> requests(numberOfServers);
+    std::vector<MPI_Status> statuses(numberOfServers);
 
-    const int serverId = worldRank / ranksPerServer;
-    const std::string serverFile = std::string(get_current_dir_name()) + "/servers/server-" +
-                                   std::to_string(serverId) + ".txt";
-
-    writeServer(serverFile, allHostnames, worldRank, worldRank + ranksPerServer);
-    setenv("MACHINE_FILE", serverFile.c_str(), 1);
-    setenv("SERVER_ID", std::to_string(serverId).c_str(), 1);
-
-    const std::string command = "job_scripts/job.sh 2>&1";
-    FILE* outPipe = popen(command.c_str(), "r");
-
-    std::string logFile;
-    auto* slurmJobId = getenv("SLURM_JOBID");
-    if (slurmJobId != nullptr) {
-      logFile = std::string(get_current_dir_name()) + "/logs/job-" + std::string(slurmJobId) +
-                "_server-" + std::to_string(serverId) + ".log";
-    } else {
-      logFile =
-          std::string(get_current_dir_name()) + "/logs/server-" + std::to_string(serverId) + ".log";
+    for (int i = 0; i < numberOfServers; i++) {
+      MPI_Irecv(&runningServers.at(i), 1, MPI_INT, i * ranksPerServer + 1, 0, MPI_COMM_WORLD, &requests.at(i));
     }
+    MPI_Waitall(numberOfServers, requests.data(), statuses.data());
+    bool allAvailable = true;
+    std::for_each(runningServers.begin(), runningServers.end(), [&allAvailable] (int i) { allAvailable &= i == 1; });
 
-    auto logger = spdlog::basic_logger_mt("SeisSol-Logger", logFile);
-    logger->set_pattern("%v");
-
-    std::array<char, 512> outputBuffer;
-    while (fgets(outputBuffer.data(), 512, outPipe) != nullptr) {
-      std::string message(outputBuffer.data());
-      message.erase(std::remove(message.begin(), message.end(), '\n'), message.cend());
-      if (message.rfind("Started server successfully", 0) == 0) {
-        spdlog::info(message);
-      }
-      logger->info(message);
-      logger->flush();
+    if (allAvailable) {
+      spdlog::info("All running");
+    } else {
+      spdlog::error("All servers sent their status, but at least one is not running.");
+      MPI_Abort(MPI_COMM_WORLD, -1);
     }
   } else {
-    spdlog::info("I will idle");
+    worldRank -= 1;
+    if (worldRank % ranksPerServer == 0) {
+      spdlog::info("I will host a server on {}", myHostname.data());
+
+      const int serverId = worldRank / ranksPerServer;
+      const std::string serverFile = std::string(get_current_dir_name()) + "/servers/server-" +
+        std::to_string(serverId) + ".txt";
+
+      writeServer(serverFile, allHostnames, worldRank, worldRank + ranksPerServer);
+      setenv("MACHINE_FILE", serverFile.c_str(), 1);
+      setenv("SERVER_ID", std::to_string(serverId).c_str(), 1);
+
+      const std::string command = "job_scripts/job.sh 2>&1";
+      FILE* outPipe = popen(command.c_str(), "r");
+
+      std::string logFile;
+      auto* slurmJobId = getenv("SLURM_JOBID");
+      if (slurmJobId != nullptr) {
+        logFile = std::string(get_current_dir_name()) + "/logs/job-" + std::string(slurmJobId) +
+          "_server-" + std::to_string(serverId) + ".log";
+      } else {
+        logFile =
+          std::string(get_current_dir_name()) + "/logs/server-" + std::to_string(serverId) + ".log";
+      }
+
+      auto logger = spdlog::basic_logger_mt("SeisSol-Logger", logFile);
+      logger->set_pattern("%v");
+
+      std::array<char, 512> outputBuffer;
+      while (fgets(outputBuffer.data(), 512, outPipe) != nullptr) {
+        std::string message(outputBuffer.data());
+        message.erase(std::remove(message.begin(), message.end(), '\n'), message.cend());
+        if (message.rfind("Started server successfully", 0) == 0) {
+          spdlog::info("Started server {}.", serverId);
+          int result = 1;
+          MPI_Send(&result, 1, MPI_INT, 0, 0, MPI_COMM_WORLD);
+        }
+        logger->info(message);
+        logger->flush();
+      }
+    } else {
+      spdlog::info("I will idle");
+    }
   }
   MPI_Finalize();
   return 0;
