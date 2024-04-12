@@ -32,12 +32,12 @@ The load balancer consists of two binaries:
 
 1. **Load Server**
 
-  The server runs in a slurm  or PBS allocation. It will start `N` different umbridge servers, each working on `N` nodes.
+  The server runs in a slurm allocation. It will start `N` different umbridge servers, each working on `N` nodes. The first MPI rank is left empty in order to run the UQ client and the `load-client` there.
   Run the server as 
   ```
-  mpirun -n $(expr $N \* $M) ./load-server $N $M
+  mpirun -n $(expr $N \* $M + 1) ./load-server $N $M
   ```
-  Make sure that your batch job has exactly `N x M` MPI slots.
+  Make sure that your batch job has exactly `N x M + 1` MPI slots.
   
    Adapt the configuration in ``hpc/job_scripts/submit.sh`` to your needs.
 
@@ -64,18 +64,15 @@ The load balancer consists of two binaries:
 
 4. **Connect from client**
 
-   Once running, you can connect to the load balancer from any UM-Bridge client on the login node via `http://localhost:4242`. To the client, it will appear like any other UM-Bridge server, except that it can process concurrent evaluation requests.
+   Once running, you can connect to the load balancer from any UM-Bridge client on the login node via `http://localhost:4343`. To the client, it will appear like any other UM-Bridge server, except that it can process concurrent evaluation requests.
    The model name is `QueuingModel`.
 
-## (Optional) Running clients on your own machine while offloading runs to HPC
-
-Alternatively, a client may run on your own device. In order to connect UM-Bridge clients on your machine to the login node, you can create an SSH tunnel to the HPC system.
-
+## Running everything in one SLURM allocation.
+The intended use is to run the `load-server`, the `load-client` and the UQ software in one slurm allocation. This can be done e.g. by
+``` 
+python3 uq-application.py &
+./load-client $N &
+mpirun -n $expr( $N \* $M + 1) ./load-server $N $M
 ```
-    ssh <username>@hpc.cluster.address -N -f -L 4242:<server hostname>:4242
-    # start ssh tunnel
-    # -N : do not execute remote command
-    # -f : request ssh to go to the background once the ssh connection has been established
-```
+Note that the use of ampersands here is crucial to not block the execution.
 
-While the SSH tunnel is running, you can run the client on your own device, and connect it to the load balancer via `http://localhost:4242`.
