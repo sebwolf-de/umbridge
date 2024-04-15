@@ -43,10 +43,11 @@ python3 tpv13server.py &
 #python3 loglikelihood_gauss_1_1.py -hq &
 
 ### TODO adapt the path here
-load_balancer_dir="${HOME}UQ/umbridge/"
+load_balancer_dir="${HOME}/UQ/umbridge/hpc"
 
 host=$(hostname -I | awk '{print $1}')
 
+echo "http://${host}:${port}"
 # Wait for model server to start
 while ! curl -s "http://$host:$port/Info" > /dev/null; do
     sleep 1

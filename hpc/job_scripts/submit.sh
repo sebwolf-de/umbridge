@@ -7,15 +7,18 @@
 #SBATCH -p normal
 #SBATCH -A EAR23026
 
-#SBATCH --nodes=61
-#SBATCH -n 61
+#SBATCH --nodes=301
+#SBATCH -n 301
 
-#SBATCH -D /home1/09160/sebwolf/UQ/umbridge/hpc/build
+#SBATCH -D /home1/09160/sebwolf/UQ/umbridge/hpc
 
 #SBATCH --mail-type=BEGIN,END,ARRAY_TASKS
 #SBATCH --mail-user=wolf.sebastian@cit.tum.de
 
-#SBATCH --time=02:00:00
+#SBATCH --time=20:00:00
+
+export N=100
+export M=3
 
 module load python/3.9.2
 module load gcc/9.1.0
@@ -29,8 +32,8 @@ python3 run.py --application seissol.sebastian &
 
 # Then shart load-client
 cd $HOME/UQ/umbridge/hpc
-./load-client 20 &
+./load-client $N &
 
 # Then start load-server
 cd $HOME/UQ/umbridge/hpc
-ibrun ./load-server 20 3
+ibrun ./load-server $N $M
