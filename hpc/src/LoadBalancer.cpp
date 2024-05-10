@@ -67,6 +67,6 @@ void umbridge::LoadBalancer::queryUrls(int numberOfWorkers) {
 
     const std::string url = readUrl(urlFile);
     spdlog::info("Job {} started, running on {}.", jobId, url);
-    wl.add(std::make_shared<Worker>(url));
+    wl.add(std::make_shared<Worker>(url, i));
   }
 }

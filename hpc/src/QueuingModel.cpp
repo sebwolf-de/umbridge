@@ -39,7 +39,7 @@ std::vector<std::vector<double>>
     umbridge::QueuingModel::Evaluate(const std::vector<std::vector<double>>& inputs, json config) {
   std::shared_ptr<Request> r = std::make_shared<Request>(inputs, config);
   {
-    std::unique_lock(JobQueue::jobsMutex);
+    std::unique_lock lockJobs(JobQueue::jobsMutex);
     q.push(r);
   }
   // Notify queuesChanged, because a new request has been submitted.
@@ -50,6 +50,8 @@ std::vector<std::vector<double>>
   // Notify queuesChanged, because a request has been finished.
   queuesChanged->notify_all();
 
+  // Need look before return, because the return will delete the request.
+  std::unique_lock lockJobs(JobQueue::jobsMutex);
   return r->output;
 }
 

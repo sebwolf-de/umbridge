@@ -9,9 +9,9 @@ void umbridge::Worker::processRequest(std::shared_ptr<umbridge::Request> r) {
   {
     const std::unique_lock<std::mutex> lk(WorkerList::workersMutex);
     occupied = true;
+    spdlog::debug("Worker {} now occupied.", id);
   }
   r->state = Request::RequestState::Processing;
-  spdlog::info("Process request on {}. This might take a while.", url);
   umbridge::HTTPModel client(url, "forward");
 
   const std::vector<std::vector<double>> outputs = client.Evaluate(r->input, r->config);
@@ -20,11 +20,12 @@ void umbridge::Worker::processRequest(std::shared_ptr<umbridge::Request> r) {
     r->output.push_back(output);
   }
   r->state = Request::RequestState::Finished;
-  if (!cv.expired()) {
-    cv.lock()->notify_all();
-  }
   {
     const std::unique_lock<std::mutex> lk(WorkerList::workersMutex);
     occupied = false;
+    spdlog::debug("Worker {} now free.", id);
+  }
+  if (!cv.expired()) {
+    cv.lock()->notify_all();
   }
 }

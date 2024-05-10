@@ -3,6 +3,8 @@
 #include <memory>
 #include <mutex>
 
+#include <spdlog/spdlog.h>
+
 #include "Worker.h"
 
 void umbridge::WorkerList::add(const std::shared_ptr<Worker>& w) {
@@ -16,6 +18,9 @@ std::shared_ptr<umbridge::Worker> umbridge::WorkerList::getFreeWorker() {
     if (!w->occupied) {
       freeWorker = w;
     }
+  }
+  if (freeWorker == nullptr) {
+    spdlog::warn("Did not find a free worker.");
   }
   return freeWorker;
 }

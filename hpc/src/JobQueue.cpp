@@ -12,7 +12,7 @@ std::mutex umbridge::JobQueue::vectorMutex;
 void umbridge::JobQueue::push(std::shared_ptr<Request> r) {
   const std::unique_lock<std::mutex> lk(vectorMutex);
   requests.push_back(r);
-  spdlog::info("Pushed request, now {} models are waiting.", countWaiting());
+  spdlog::info("Pushed request, now {} models are waiting, chain has size/capacity {}/{}.", countWaiting(), requests.size(), requests.capacity());
 }
 
 std::shared_ptr<umbridge::Request> umbridge::JobQueue::firstWaiting() const {

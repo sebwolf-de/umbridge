@@ -18,11 +18,12 @@ class Worker {
     w->processRequest(r);
   }
   bool occupied{};
+  int id;
   std::string url;
   std::weak_ptr<WorkerList> wl;
   std::weak_ptr<std::condition_variable> cv;
 
-  Worker(std::string url) : url(std::move(url)){};
+  Worker(std::string url, int id) : url(std::move(url)), id(id) {};
 
   void processRequest(std::shared_ptr<Request> r);
 };

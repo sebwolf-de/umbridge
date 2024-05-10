@@ -29,6 +29,9 @@ target_link_libraries(load-client PUBLIC umbridge)
 find_package(MPI REQUIRED)
 target_link_libraries(load-server PUBLIC MPI::MPI_CXX)
 
+find_package(Threads REQUIRED)
+target_link_libraries(load-client PRIVATE Threads::Threads)
+
 option(ADDRESS_SANITIZER "Use address sanitzer in debug mode" OFF)
 
 if (ADDRESS_SANITIZER)

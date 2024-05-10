@@ -7,12 +7,14 @@
 #include <thread>
 #include <vector>
 
-#include "JobQueue.h"
-#include "WorkerList.h"
+#include <spdlog/spdlog.h>
 
+#include "umbridge.h"
+
+#include "JobQueue.h"
 #include "LoadBalancer.h"
 #include "QueuingModel.h"
-#include "umbridge.h"
+#include "WorkerList.h"
 
 std::shared_ptr<std::condition_variable> umbridge::QueuingModel::requestFinished =
     std::make_shared<std::condition_variable>();
@@ -29,6 +31,9 @@ constexpr unsigned Port = 4343;
 int main(int argc, char** argv) {
   assert(argc == 2);
   const int numberOfJobs = std::atoi(argv[1]);
+#ifndef NDEBUG
+  spdlog::set_level(spdlog::level::debug);
+#endif
   umbridge::LoadBalancer lb;
   lb.queryUrls(numberOfJobs);
   auto q = std::make_shared<umbridge::QueuingModel>(
