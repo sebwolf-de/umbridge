@@ -25,25 +25,15 @@ port=$(get_avaliable_port)
 export PORT=$port
 export RANKS=$(wc -l $MACHINE_FILE | awk '{print $1}')
 
-unset OMPI_MCA_plm_slurm_args
-unset PRTE_MCA_plm_slurm_args
-unset HYDRA_LAUNCHER_EXTRA_ARGS
-unset I_MPI_HYDRA_BOOTSTRAP_EXEC_EXTRA_ARGS
-export I_MPI_HYDRA_BOOTSTRAP=ssh
-export NODE_TASKS_PPN_INFO=1,0_
-mpiexec.hydra -np $RANKS -machinefile $MACHINE_FILE /usr/bin/hostname
-
-module load intel
-module load python3/3.9.2
 ### TODO adapt the path here
-cd $WORK/UQ/Seis-Bridge/tpv13
-python3 tpv13server.py &
+#cd $WORK/UQ/Seis-Bridge/tpv13
+#python3 tpv13server.py &
 
-#cd $HOME/UQ/models/
-#python3 loglikelihood_gauss_1_1.py -hq &
+cd $HOME/models/
+python3 loglikelihood_gauss_1_1.py -hq &
 
 ### TODO adapt the path here
-load_balancer_dir="${HOME}/UQ/umbridge/hpc"
+load_balancer_dir="${HOME}/umbridge/hpc"
 
 host=$(hostname -I | awk '{print $1}')
 

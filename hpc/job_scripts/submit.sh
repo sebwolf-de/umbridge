@@ -1,39 +1,27 @@
 #!/bin/bash
 
-#SBATCH -J Umbridge-Server
-#SBATCH -o logs/%x_%j.out
-#SBATCH -e logs/%x_%j.err
-
-#SBATCH -p normal
-#SBATCH -A EAR23026
-
-#SBATCH --nodes=301
-#SBATCH -n 301
-
-#SBATCH -D /home1/09160/sebwolf/UQ/umbridge/hpc
-
-#SBATCH --mail-type=BEGIN,END,ARRAY_TASKS
+#SBATCH --job-name=SeisSol-UQ   # Job name
+#SBATCH --output=logs/SeisSol-UQ_%j.out # Name of stdout output file
+#SBATCH --error=logs/SeisSol-UQ_%j.err  # Name of stderr error file
+#SBATCH --partition=standard-g  # partition name
+#SBATCH --nodes=3               # Total number of nodes
+#SBATCH --ntasks-per-node=20    # 8 MPI ranks per node, 16 total (2x8)
+#SBATCH --time=00:30:00       # Run time (d-hh:mm:ss)
+#SBATCH --account=project_465000643
+#SBATCH --mail-type=BEGIN,END
 #SBATCH --mail-user=wolf.sebastian@cit.tum.de
 
-#SBATCH --time=20:00:00
+export N=59
+export M=1
 
-export N=100
-export M=3
+cd $HOME/surrogate
+python3 server.py --app seissol.sebastian&
 
-module load python/3.9.2
-module load gcc/9.1.0
-
+cd $HOME/umbridge/hpc
 rm -rf urls/*
 rm -rf servers/*
-
-# First start UQ client
-cd $HOME/UQ/mtmlda/
-python3 run.py --application seissol.sebastian &
-
-# Then shart load-client
-cd $HOME/UQ/umbridge/hpc
+srun ./load-server $N $M &
 ./load-client $N &
 
-# Then start load-server
-cd $HOME/UQ/umbridge/hpc
-ibrun ./load-server $N $M
+cd $HOME/mtmlda
+python3 run.py --app seissol.sebastian
