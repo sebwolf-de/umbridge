@@ -59,7 +59,7 @@ class Model {
 
   std::string GetName() const;
 
-  std::vector<std::string> SupportedModels(std::string host,
+  static std::vector<std::string> SupportedModels(std::string host,
                                            httplib::Headers headers = httplib::Headers());
 };
 

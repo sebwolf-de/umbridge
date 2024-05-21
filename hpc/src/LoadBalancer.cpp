@@ -1,5 +1,7 @@
 #include "LoadBalancer.h"
 
+#include "umbridge.h"
+
 #include <filesystem>
 #include <fstream>
 #include <string>
@@ -36,6 +38,24 @@ bool waitForFile(const std::string& filename) {
   return true;
 }
 
+// wait until um-bridge server is available
+bool waitForServer(const std::string& url) {
+  bool serverAvailable = false;
+  while (!serverAvailable) {
+    try {
+      std::vector<std::string> availableModels = umbridge::Model::SupportedModels(url);
+      if (availableModels.at(0) == "forward") {
+        serverAvailable = true;
+      }
+    } catch (const std::exception& e) {
+      spdlog::warn(e.what());
+      std::this_thread::sleep_for(std::chrono::seconds(1));
+    }
+  }
+
+  return true;
+}
+
 std::string readUrl(const std::string& filename) {
   std::ifstream file(filename);
   std::string url;
@@ -66,6 +86,7 @@ void umbridge::LoadBalancer::queryUrls(int numberOfWorkers) {
     waitForFile(urlFile);
 
     const std::string url = readUrl(urlFile);
+    waitForServer(url);
     spdlog::info("Job {} started, running on {}.", jobId, url);
     wl.add(std::make_shared<Worker>(url, i));
   }
