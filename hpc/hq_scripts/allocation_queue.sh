@@ -12,3 +12,4 @@ hq alloc add slurm --time-limit 4h \
 		      --gpus-per-node=8 \
 		      --account="project_465000643"
 # Any parameters after -- will be passed directly to sbatch (e.g. credentials, partition, mem, etc.)
+# Note that the hq maintainers suggest to not use the `--nodes` argument, but on LUMI it is required, because of the non-flexible srun.

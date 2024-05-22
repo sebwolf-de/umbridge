@@ -76,3 +76,17 @@ mpirun -n $expr( $N \* $M + 1) ./load-server $N $M
 ```
 Note that the use of ampersands here is crucial to not block the execution.
 
+## LUMI
+
+Lumi has some problems, regarding the flexibility of MPI: Only the `srun` command is available, and features like the `hostfile` do not work.
+Thererfore, we use a slightly different workflow on LUMI.
+`N` servers will run on the login nodes of LUMI, and spawn their compute tasks as hq jobs.
+The current workflow is:
+
+* Implement a server that _offloads_ compute tasks as hq jobs.
+* Start `N` servers on the login nodes.
+* Manually add the addresses of the servers to the `urls/url-x.txt` files. These files only contain the address, e.g. `http://uan04:42424`.
+* `./load-client $N`
+* `python3 uq-application.py`
+
+We advise you to use `tmux` on LUMI, such that you do not need to keep the SSH session to LUMI alive forever.
